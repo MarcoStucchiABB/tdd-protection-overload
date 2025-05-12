@@ -1,0 +1,127 @@
+// Unit tests
+
+#include "unity.h"
+#include <assert.h>
+#include "protection_overload.h"
+
+#define TEST_MAX_TIME   3600.0  // [s] max time for test execution (default = 1 hour)
+
+// Test case structure
+typedef struct {
+    unsigned int id;
+    float current;
+    ProtectionOverloadState expected_state;
+    float expected_time;
+    const char* description;
+} t_test_case;
+
+// Test current value (mocked sensor value)
+float test_current = 0.0f;
+
+/* ------------------------------------------------ 
+        Unity setup and teardown functions
+   ------------------------------------------------ */
+
+void setUp(void) { 
+    // Called before every test
+}
+
+void tearDown(void) { 
+    // Called after every test
+}
+
+/* ------------------------------------------------ 
+        Mocked Sensor Read Function
+   ------------------------------------------------ */
+
+float Sensor_Read() {
+
+    return test_current;
+}
+
+/* ------------------------------------------------ 
+        Test Functions
+   ------------------------------------------------ */
+
+void test_ProtectionOverload_Generic(
+    float simulated_current,
+    ProtectionOverloadState expected_state,
+    float expected_time) {
+
+    // Init state machine and parameters
+    ProtectionOverload_SM_Init();
+
+    // Max test time
+    float max_test_time = TEST_MAX_TIME;
+    if (max_test_time < 2*expected_time) {
+        max_test_time = 2*expected_time;
+    }
+
+    // Set test current value
+    test_current = simulated_current;
+
+    // Init test iterations
+    int iterations = 0;
+    int max_iterations = max_test_time / ProtectionOverload_SM_GetCallRate();
+
+    // Actual testing loop
+    // ! Exit conditions are only a tripped protection or maximum test time reached
+    while (ProtectionOverload_SM_GetState() != ST_OVERLOAD_TRIGGERED && iterations < max_iterations) {
+
+        // Run State Machine
+        ProtectionOverload_SM_Run();
+
+        // Increase test iterations
+        iterations++;
+    }
+
+    // Check expected state using Unity
+    TEST_ASSERT_EQUAL_MESSAGE(expected_state, ProtectionOverload_SM_GetState(), "Protection state mismatch.");
+
+}
+
+
+/* ------------------------------------------------ 
+        Test Case Launch Function
+   ------------------------------------------------ */
+
+void test_case_launch(const t_test_case *test_case) {
+    // printf("Running test case %d: %s\n", test_case->id, test_case->description);
+    
+    // lunche the actual test
+    test_ProtectionOverload_Generic(
+        test_case->current, 
+        test_case->expected_state, 
+        test_case->expected_time);
+}   
+
+/* ------------------------------------------------ 
+        Test Cases - Fixed Current Values
+   ------------------------------------------------ */
+
+const t_test_case test_cases_fixed_current[] = {
+    {.id = 100, .current = 0.2f, .expected_state = ST_IDLE, .description = "Low current"},
+    {.id = 101, .current = 0.8f, .expected_state = ST_IDLE, .description = "Normal current"},
+    {.id = 102, .current = 1.0f, .expected_state = ST_IDLE, .description = "Nominal current"},
+ };
+
+void test_fixed_current_100(void) {test_case_launch(&test_cases_fixed_current[0]);}
+void test_fixed_current_101(void) {test_case_launch(&test_cases_fixed_current[1]);}
+void test_fixed_current_102(void) {test_case_launch(&test_cases_fixed_current[2]);}
+
+/* ------------------------------------------------ 
+        Main Function
+   ------------------------------------------------ */  
+
+int main() {
+
+    UNITY_BEGIN();
+
+    // Test cases with fixed current values
+    printf("\nProtection Overload Test with fixed currents\n");
+    RUN_TEST(test_fixed_current_100);
+    RUN_TEST(test_fixed_current_101);
+    RUN_TEST(test_fixed_current_102);
+
+    return UNITY_END();    
+}
