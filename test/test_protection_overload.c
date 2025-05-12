@@ -6,6 +6,11 @@
 
 #define TEST_MAX_TIME   3600.0  // [s] max time for test execution (default = 1 hour)
 
+// ! Test with lower tolerance
+#define protectionTolerance 0.1f        // 10% tolerance for protection trip time (used in tests)
+//#define protectionTolerance 0.01f     // 1% tolerance for protection trip time (used in tests)
+
+
 // Test case structure
 typedef struct {
     unsigned int id;
@@ -85,10 +90,12 @@ void test_ProtectionOverload_Generic(
     // Check expected timing using Unity, only in case of tripped protection
     if (expected_state == ST_OVERLOAD_TRIGGERED) {
 
-        // print accumulated energy
-        printf("Tripping time: %f\n", actual_time);
-    }
+        // print tripping energy
+        // printf("Tripping time: %f\n", actual_time);
         
+        TEST_ASSERT_FLOAT_WITHIN_MESSAGE(expected_time * protectionTolerance, expected_time, actual_time, "Protection time mismatch.");
+    }
+
 }
 
 /* ------------------------------------------------ 
@@ -127,8 +134,8 @@ const t_test_case test_cases_fixed_current[] = {
     {.id = 100, .current = 0.2f,  .expected_state = ST_IDLE, .description = "Low current"},
     {.id = 101, .current = 0.8f,  .expected_state = ST_IDLE, .description = "Normal current"},
     {.id = 102, .current = 1.0f,  .expected_state = ST_IDLE, .description = "Nominal current"},
-    {.id = 103, .current = 1.5f,  .expected_state = ST_OVERLOAD_TRIGGERED, .description = "1.5 times Nominal current"},
-    {.id = 104, .current = 10.0f, .expected_state = ST_OVERLOAD_TRIGGERED, .description = "10 times Nominal current"},
+    {.id = 103, .current = 1.5f,  .expected_state = ST_OVERLOAD_TRIGGERED, .expected_time = 0.8f, .description = "1.5 times Nominal current"},
+    {.id = 104, .current = 10.0f, .expected_state = ST_OVERLOAD_TRIGGERED, .expected_time = 0.02f, .description = "10 times Nominal current"},
  };
 
 void test_fixed_current_100(void) {test_case_launch(&test_cases_fixed_current[0]);}
