@@ -44,12 +44,13 @@ float Sensor_Read() {
    ------------------------------------------------ */
 
 void test_ProtectionOverload_Generic(
+    ProtectionOverloadParams *params,
     float simulated_current,
     ProtectionOverloadState expected_state,
     float expected_time) {
 
     // Init state machine and parameters
-    ProtectionOverload_SM_Init();
+    ProtectionOverload_SM_Init(params);
 
     // Max test time
     float max_test_time = TEST_MAX_TIME;
@@ -80,6 +81,18 @@ void test_ProtectionOverload_Generic(
 
 }
 
+/* ------------------------------------------------ 
+        Test Parameters
+   ------------------------------------------------ */
+
+// Protection parameters
+// ! These parameters are shared among all test cases
+ProtectionOverloadParams protectionParams = {
+    .overload_threshold = 1.0f,     // ! Normalized to 1.0 (current passed in the test is actually I/Ithreshold)
+    .k_factor = 1.0f,               // IEC 60947-2 protection k
+    .cooling_rate = 0.98f,          
+    .max_energy = 1.0f              // 1.0 is the trip threshold
+};
 
 /* ------------------------------------------------ 
         Test Case Launch Function
@@ -90,6 +103,7 @@ void test_case_launch(const t_test_case *test_case) {
     
     // lunche the actual test
     test_ProtectionOverload_Generic(
+        &protectionParams,
         test_case->current, 
         test_case->expected_state, 
         test_case->expected_time);
