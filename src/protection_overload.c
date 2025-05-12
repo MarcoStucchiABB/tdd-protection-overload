@@ -1,6 +1,7 @@
 // Protection Overload 
 
 #include "protection_overload.h"
+#include <math.h>
 
 #define   CALL_RATE 0.01f       // Call rate [s] = 10 ms
 
@@ -50,7 +51,28 @@ void ProtectionOverload_SM_Run() {
 
             // Read current sensor value
             float maxCurrent = Sensor_Read();
+            
+            // Compute overload factor: I / I_trip
+            float overload_factor = maxCurrent / sm.params.overload_threshold;
 
+            if (overload_factor > 1.15f) {
+
+                // Compute inverse-time trip curve: t_trip = k / ((I/I_trip)^n - 1)
+                float trip_time_sec = sm.params.k_factor / (powf(overload_factor, 2)-1);
+
+                // Accumulate energy based on time step
+                sm.accumulated_energy += (sm.call_rate_sec / trip_time_sec);
+
+                // Check if accumulated energy exceeds 1.0 (tripping threshold)
+                if (sm.accumulated_energy >= 1.0f) {
+                    // Trip protection
+                    ProtectionOverload_SM_EnterState(ST_OVERLOAD_TRIGGERED);
+                }
+            } else {
+                // If current drops below threshold, slowly reset energy (hysteresis)
+                sm.accumulated_energy -= sm.call_rate_sec / sm.params.max_energy;
+                if (sm.accumulated_energy < 0.0f) sm.accumulated_energy = 0.0f;
+            }
             break;
         }
         
