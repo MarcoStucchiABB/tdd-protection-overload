@@ -79,6 +79,16 @@ void test_ProtectionOverload_Generic(
     // Check expected state using Unity
     TEST_ASSERT_EQUAL_MESSAGE(expected_state, ProtectionOverload_SM_GetState(), "Protection state mismatch.");
 
+    // Get actual time
+    float actual_time = iterations * ProtectionOverload_SM_GetCallRate();
+
+    // Check expected timing using Unity, only in case of tripped protection
+    if (expected_state == ST_OVERLOAD_TRIGGERED) {
+
+        // print accumulated energy
+        printf("Tripping time: %f\n", actual_time);
+    }
+        
 }
 
 /* ------------------------------------------------ 
