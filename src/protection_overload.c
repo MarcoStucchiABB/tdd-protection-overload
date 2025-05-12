@@ -15,9 +15,18 @@ static void ProtectionOverload_SM_EnterState(ProtectionOverloadState state) {
 }
 
 // State Machine Initialization
-void ProtectionOverload_SM_Init(void) {
+void ProtectionOverload_SM_Init(ProtectionOverloadParams *params) {
     // Init SM state
     ProtectionOverload_SM_EnterState(ST_IDLE);
+
+    // Get call rate
+    sm.call_rate_sec = ProtectionOverload_SM_GetCallRate();
+
+    // Clear energy storage
+    sm.accumulated_energy = 0.0f;
+
+    // Init operating parameters
+    sm.params = *params;
 }
 
 // Return protection call rate [s]
