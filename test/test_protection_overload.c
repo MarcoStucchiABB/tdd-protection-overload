@@ -131,11 +131,14 @@ void test_case_launch(const t_test_case *test_case) {
    ------------------------------------------------ */
 
 const t_test_case test_cases_fixed_current[] = {
-    {.id = 100, .current = 0.2f,  .expected_state = ST_IDLE, .description = "Low current"},
-    {.id = 101, .current = 0.8f,  .expected_state = ST_IDLE, .description = "Normal current"},
-    {.id = 102, .current = 1.0f,  .expected_state = ST_IDLE, .description = "Nominal current"},
-    {.id = 103, .current = 1.5f,  .expected_state = ST_OVERLOAD_TRIGGERED, .expected_time = 0.8f, .description = "1.5 times Nominal current"},
-    {.id = 104, .current = 10.0f, .expected_state = ST_OVERLOAD_TRIGGERED, .expected_time = 0.02f, .description = "10 times Nominal current"},
+    {.id = 100, .current = 0.2f, .expected_state = ST_IDLE, .description = "Low current"},
+    {.id = 101, .current = 0.8f, .expected_state = ST_IDLE, .description = "Normal current"},
+    {.id = 102, .current = 1.0f, .expected_state = ST_IDLE, .description = "Nominal current"},
+    {.id = 103, .current = 1.2f, .expected_state = ST_OVERLOAD_TRIGGERED, .expected_time = 2.27f, .description = "Overload current 1,2 x Itrip"},
+    {.id = 104, .current = 1.4f, .expected_state = ST_OVERLOAD_TRIGGERED, .expected_time = 1.04f, .description = "Overload current 1,4 x Itrip"},
+    {.id = 105, .current = 1.6f, .expected_state = ST_OVERLOAD_TRIGGERED, .expected_time = 0.64f, .description = "Overload current 1,6 x Itrip"},
+    {.id = 106, .current = 2.0f, .expected_state = ST_OVERLOAD_TRIGGERED, .expected_time = 0.33f, .description = "Overload current 2,0 x Itrip"},
+    {.id = 107, .current = 3.0f, .expected_state = ST_OVERLOAD_TRIGGERED, .expected_time = 0.12f, .description = "Overload current 3,0 x Itrip"}
  };
 
 void test_fixed_current_100(void) {test_case_launch(&test_cases_fixed_current[0]);}
@@ -143,6 +146,9 @@ void test_fixed_current_101(void) {test_case_launch(&test_cases_fixed_current[1]
 void test_fixed_current_102(void) {test_case_launch(&test_cases_fixed_current[2]);}
 void test_fixed_current_103(void) {test_case_launch(&test_cases_fixed_current[3]);}
 void test_fixed_current_104(void) {test_case_launch(&test_cases_fixed_current[4]);}
+void test_fixed_current_105(void) {test_case_launch(&test_cases_fixed_current[5]);}
+void test_fixed_current_106(void) {test_case_launch(&test_cases_fixed_current[6]);}
+void test_fixed_current_107(void) {test_case_launch(&test_cases_fixed_current[7]);}
 
 /* ------------------------------------------------ 
         Main Function
@@ -159,6 +165,9 @@ int main() {
     RUN_TEST(test_fixed_current_102);
     RUN_TEST(test_fixed_current_103);
     RUN_TEST(test_fixed_current_104);
+    RUN_TEST(test_fixed_current_105);
+    RUN_TEST(test_fixed_current_106);
+    RUN_TEST(test_fixed_current_107);
 
     return UNITY_END();    
 }
